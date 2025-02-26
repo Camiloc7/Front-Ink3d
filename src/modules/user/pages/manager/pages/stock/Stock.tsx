@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image";
 
 
 
@@ -15,16 +16,19 @@ export default function StockManagement() {
     nombre: "", talla: "XS", color: "Blanco", precio: 0, stock: 1, categoria: "", descripcion: "", imagen: ""
   });
 
-  const handleImageUpload = (e: any) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewItem({ ...newItem, imagen: reader.result });
+        if (typeof reader.result === "string") {
+          setNewItem({ ...newItem, imagen: reader.result });
+        }
       };
       reader.readAsDataURL(file);
     }
   };
+  
 
   const addItem = () => {
     setInventory([...inventory, { ...newItem, id: Date.now() }]);
@@ -70,7 +74,7 @@ export default function StockManagement() {
           <tbody>
             {inventory.map((item) => (
               <tr key={item.id}>
-                <td className="py-2 px-4 border-b">{item.imagen && <img src={item.imagen} alt={item.nombre} className="w-16 h-16 object-cover" />}</td>
+                <td className="py-2 px-4 border-b">{item.imagen && <Image src={item.imagen} alt={item.nombre} className="w-16 h-16 object-cover" />}</td>
                 <td className="py-2 px-4 border-b">{item.nombre}</td>
                 <td className="py-2 px-4 border-b">{item.talla}</td>
                 <td className="py-2 px-4 border-b">{item.color}</td>

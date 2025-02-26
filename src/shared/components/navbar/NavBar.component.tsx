@@ -6,7 +6,6 @@ import { Menu, X, LucideSearch, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 export default function NavBar() {
-    const [logged, setLogged] = useState(false);
     const [menu, setMenu] = useState<boolean>(false);
 
     const handleToggle = (): void => {
@@ -38,11 +37,9 @@ export default function NavBar() {
                     <h2>Estoy buscando...</h2>
                 </div>
 
-                
                 <Link href={"/cart"} className="my-auto ml-auto mr-4">
                     <ShoppingCart size="24" color="gray" />
                 </Link>
-                
             </div>
 
             {/* Menú desplegable con animación */}

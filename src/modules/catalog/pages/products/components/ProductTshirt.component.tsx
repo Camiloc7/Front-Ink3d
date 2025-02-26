@@ -1,4 +1,4 @@
-import ProductCard from "../../home/components/products/ProductCard.component";
+import ProductCard from "../../../../../app/home/ProductCard.component";
 
 interface Product {
   id: number;

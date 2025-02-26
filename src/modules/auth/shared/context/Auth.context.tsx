@@ -3,7 +3,7 @@
 import React, { useState, useContext, createContext, useEffect } from "react";
 import { LoginInterface } from "../interfaces/Login.interface";
 import Loading from "@/app/loading";
-import { SignupInterface, UserInterface } from "../interfaces/Signup.interface";
+import { SignupInterface } from "../interfaces/Signup.interface";
 import axios from "axios";
 import { API_BACK } from "@/shared/config/api/getEnv";
 
@@ -54,13 +54,13 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
         message: string
     }
 
-    interface TokenInterface {
-        email: string
-        exp: number
-        iat: number
-        role: string
-        userId: string
-    }
+    // interface TokenInterface {
+    //     email: string
+    //     exp: number
+    //     iat: number
+    //     role: string
+    //     userId: string
+    // }
 
     const login = async (loginForm: LoginInterface) => {  
         const { data } = await axios.post<ResponseInterface>(`${API_BACK}/auth/signin`, loginForm)

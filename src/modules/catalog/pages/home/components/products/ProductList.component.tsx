@@ -1,4 +1,4 @@
- import ProductCard from "./ProductCard.component";
+ import ProductCard from "../../../../../../app/home/ProductCard.component";
  import VerMas from "@/shared/components/buttons/VerMas.component";
 
  interface Product {

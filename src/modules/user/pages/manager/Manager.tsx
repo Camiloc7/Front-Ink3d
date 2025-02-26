@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -12,8 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useRouter } from "next/navigation";
-
-
+import Image from "next/image";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -28,19 +25,19 @@ export default function Dashboard() {
     { name: "May", ventas: 6000 },
   ];
 
-  const userData = [
-    { name: "Ene", usuarios: 100 },
-    { name: "Feb", usuarios: 150 },
-    { name: "Mar", usuarios: 300 },
-    { name: "Abr", usuarios: 250 },
-    { name: "May", usuarios: 400 },
-  ];
+  // const userData = [
+  //   { name: "Ene", usuarios: 100 },
+  //   { name: "Feb", usuarios: 150 },
+  //   { name: "Mar", usuarios: 300 },
+  //   { name: "Abr", usuarios: 250 },
+  //   { name: "May", usuarios: 400 },
+  // ];
 
   return (
     <div className={`flex h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
       <nav className={`w-64 p-4 space-y-3 ${darkMode ? "bg-gray-900" : "bg-black"} text-white`}>
 
-        <img src="/Logoink3d.png" alt="Logo" className="w-32 mx-auto  mt-10 mb-4" />
+        <Image src="/Logoink3d.png" alt="Logo" className="w-32 mx-auto  mt-10 mb-4" />
         <h2 className= "text-white"> General </h2>
         
         {[

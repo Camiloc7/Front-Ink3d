@@ -1,12 +1,10 @@
 
 import { ErrorsInterface } from "../../../shared/interfaces/Error.interface"
 import { SignupInterface } from "./Signup.interface"
-
 export const validateFormSignup = (form: SignupInterface, requiredFields: string[]): ErrorsInterface => {
-    const currentErrors: ErrorsInterface = {}
+    const currentErrors: ErrorsInterface = {};
 
     requiredFields.forEach((field) => {
-        let error = ""
         switch (field) {
             case "email":
                 if (!form.email) currentErrors.email = "El email es obligatorio";   
@@ -20,29 +18,24 @@ export const validateFormSignup = (form: SignupInterface, requiredFields: string
                 else if (!/[A-Z]/.test(form.password)) currentErrors.password = "Debe contener al menos una letra mayúscula";
                 else if (!/\d/.test(form.password)) currentErrors.password = "Debe contener al menos un número";
                 else if (!/[\W_]/.test(form.password)) currentErrors.password = "Debe contener al menos un carácter especial";
-                
                 break;
         
             case "confirmPassword":
                 if (!form.confirmPassword) currentErrors.confirmPassword = "Debes confirmar tu contraseña";
                 else if (form.password !== form.confirmPassword) 
                     currentErrors.confirmPassword = "Las contraseñas no coinciden";
-                
                 break;
         
             case "name":
                 if (!form.name) currentErrors.name = "El nombre es obligatorio";
                 else if (!/^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$/.test(form.name)) 
                     currentErrors.name = "El nombre solo puede contener letras y espacios";
-                
                 break;
         
             default:
                 break; 
         }   
-        if (error) {
-            currentErrors[field] = error;
-        }
-    })
-    return currentErrors 
-} 
+    });
+
+    return currentErrors;
+};
