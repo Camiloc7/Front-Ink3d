@@ -1,29 +1,37 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import io from "socket.io-client";
+import io, { Socket } from "socket.io-client";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 import { MessageSquareMoreIcon, X } from "lucide-react";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3003";
-const socket = io(SOCKET_URL, {
-  transports: ["websocket", "polling"],
-});
 
 export default function Chatbot() {
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatSize, setChatSize] = useState({ width: 320, height: 400 });
   const [position, setPosition] = useState({
-    x: window.innerWidth - 340,
-    y: window.innerHeight - 460,
+    x: typeof window !== "undefined" ? window.innerWidth - 340 : 0,
+    y: typeof window !== "undefined" ? window.innerHeight - 460 : 0,
   });
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
+    const newSocket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 5000,
+    });
+
+    newSocket.on("connect", () => console.log("Conectado al WebSocket"));
+    newSocket.on("disconnect", () => console.log("Desconectado del WebSocket"));
+
     const handleBotResponse = (data: { text: string }) => {
       setMessages((prev) => {
         if (prev[prev.length - 1]?.text !== data.text) {
@@ -33,10 +41,13 @@ export default function Chatbot() {
       });
     };
 
-    socket.on("bot-response", handleBotResponse);
+    newSocket.on("bot-response", handleBotResponse);
+
+    setSocket(newSocket);
 
     return () => {
-      socket.off("bot-response", handleBotResponse);
+      newSocket.off("bot-response", handleBotResponse);
+      newSocket.disconnect();
     };
   }, []);
 
@@ -47,7 +58,7 @@ export default function Chatbot() {
   }, [messages]);
 
   const sendMessage = () => {
-    if (input.trim()) {
+    if (input.trim() && socket) {
       const newMessage = { text: input, sender: "user" };
       setMessages((prev) => [...prev, newMessage]);
 
