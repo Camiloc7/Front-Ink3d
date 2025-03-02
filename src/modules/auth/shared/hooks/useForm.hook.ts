@@ -6,7 +6,6 @@
 // import { ErrorsInterface } from "../interfaces/Error.interface"
 // import { Mixin } from "../components/MixinAlert"
 
-
 // /**
 //  * Interfaz que define las propiedades requeridas para usar el hook "useForm"
 //  *
@@ -76,8 +75,14 @@
    
 //                 Mixin.fire(messageSuccess, "", "success")
 //                 router.replace(redirectSuccessRoute ? redirectSuccessRoute : "")
-//             } catch (error: unknown) {
-//                 Mixin.fire("Invalid credentials", "", "error") 
+//             } catch (error: any) {
+//                 const errorMessage = error.response?.data?.message
+//                 const messageToShow = [
+//                     "Invalid password", "User does not exist"
+//                 ].includes(errorMessage)
+//                     ? "Invalid credentials" : errorMessage
+
+//                 Mixin.fire(messageToShow ?? error.response?.data?.message, "", "error")
 //             } finally {
 //                 setIsLoading(false)
 //             }
@@ -117,79 +122,91 @@
 
 
 
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useRouter } from "next/navigation"
+import React, { useState } from "react"
 
-import { ErrorsInterface } from "../interfaces/Error.interface";
-import { Mixin } from "../components/MixinAlert";
+import { ErrorsInterface } from "../interfaces/Error.interface"
+import { Mixin } from "../components/MixinAlert"
 
 interface UseFormProps<T> {
-  formInitial: T;
-  requiredFields: string[];
-  authAction: (form: T) => void;
-  validateForm: (form: T, requiredFields: string[]) => ErrorsInterface;
-  messageSuccess: string;
-  redirectSuccessRoute?: string;
+    formInitial: T
+    requiredFields: string[]
+    authAction: (form: T) => void
+    validateForm: (form: T, requiredFields: string[]) => ErrorsInterface
+    messageSuccess: string
+    redirectSuccessRoute?: string
 }
 
 export function useForm<T>({
-  formInitial,
-  requiredFields,
-  authAction,
-  validateForm,
-  messageSuccess,
-  redirectSuccessRoute,
+    formInitial,
+    requiredFields,
+    authAction,
+    validateForm,
+    messageSuccess,
+    redirectSuccessRoute
 }: UseFormProps<T>) {
-  const [form, setForm] = useState<T>(formInitial);
-  const [formErrors, setFormErrors] = useState<ErrorsInterface>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+    const [form, setForm] = useState<T>(formInitial)
+    const [formErrors, setFormErrors] = useState<ErrorsInterface>({})
+    const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
 
-  const handlerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    const handlerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        
+        const validationErrors = validateForm(form, requiredFields) 
+        const keyErrors = Object.keys(validationErrors)
 
-    const validationErrors = validateForm(form, requiredFields);
-    const keyErrors = Object.keys(validationErrors);
+        if (keyErrors.length > 0) {
+            setFormErrors(validationErrors);
+            Mixin.fire(`Is required: \n${keyErrors.join(`\n`)}`, "", "error")  
+            return
+        } else {
+            try {
+                setIsLoading(true)
 
-    if (keyErrors.length > 0) {
-      setFormErrors(validationErrors);
-      Mixin.fire(`Is required: \n${keyErrors.join(`\n`)}`, "", "error");
-      return;
+                await authAction(form)
+   
+                Mixin.fire(messageSuccess, "", "success")
+                router.replace(redirectSuccessRoute ? redirectSuccessRoute : "")
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    const errorMessage = (error as { response?: { data?: { message?: string } } }).response?.data?.message;
+                    const messageToShow = ["Invalid password", "User does not exist"].includes(errorMessage ?? "")
+                        ? "Invalid credentials" 
+                        : errorMessage;
+            
+                    Mixin.fire(messageToShow ?? "An error occurred", "", "error");
+                } else {
+                    Mixin.fire("An unexpected error occurred", "", "error");
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+    } 
+
+    const handlerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+    
+        setForm((prevForm: T) => ({
+            ...prevForm,
+            [name]: value
+        }));
+    
+        setFormErrors({
+            ...validateForm({ ...form, [name]: value }, [name]) 
+        });
+    };
+    
+    
+
+    return {
+        isLoading,
+        formErrors,
+        form,
+        handlerChange,
+        handlerSubmit
     }
-
-    try {
-      setIsLoading(true);
-      await authAction(form);
-      Mixin.fire(messageSuccess, "", "success");
-      router.replace(redirectSuccessRoute || ""); // Usa `||` en lugar de `? :`
-    } catch {
-      Mixin.fire("Invalid credentials", "", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
-
-    setFormErrors((prevErrors) => ({
-      ...prevErrors, // Mantiene los errores anteriores
-      ...validateForm({ ...form, [name]: value }, [name]), // Solo actualiza el campo cambiado
-    }));
-  };
-
-  return {
-    isLoading,
-    formErrors,
-    form,
-    handlerChange,
-    handlerSubmit,
-  };
 }
